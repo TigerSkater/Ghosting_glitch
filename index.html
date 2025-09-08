@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Squash Ghosting Drill</title>
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f7e7ce;
+      font-family: 'Segoe UI', sans-serif;
+      color: #333;
+      text-align: center;
+      padding: 20px;
+    }
+
+    h1 {
+      font-family: 'Dancing Script', cursive;
+      font-size: 3.5em;
+      color: #722f37;
+      text-shadow: 1px 1px 2px #f2acb3;
+      margin-bottom: 0.5em;
+    }
+
+    #floatingGhost {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 80px;
+      opacity: 0.9;
+      z-index: 10;
+      animation: floatGhost 3s ease-in-out infinite;
+    }
+
+    @keyframes floatGhost {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
+      100% { transform: translateY(0); }
+    }
+
+    #configContainer {
+      transition: opacity 0.5s ease;
+    }
+
+    .hide {
+      display: none;
+    }
+
+    label, input {
+      font-family: 'Times New Roman', serif;
+      font-size: 1.2em;
+      margin: 5px;
+    }
+
+    button {
+      font-size: 1.2em;
+      padding: 8px 16px;
+      font-family: 'Times New Roman', serif;
+      margin: 10px;
+      cursor: pointer;
+    }
+
+    #drillView {
+      display: none;
+      animation: zoomIn 0.8s ease forwards;
+    }
+
+    #drillView.active {
+      display: block;
+    }
+
+    @keyframes zoomIn {
+      0% { transform: scale(0.8); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    #direction {
+      font-size: 2.6em;
+      font-weight: 600;
+      margin-bottom: 0.3em;
+      color: #2c3e50;
+    }
+
+    #countdown {
+      font-size: 4em;
+      color: #8e44ad;
+      margin: 0.8em 0;
+    }
+
+    #image {
+      width: 85vw;
+      max-width: 550px;
+      height: auto;
+      display: block;
+      margin: 0 auto 1em auto;
+    }
+
+    #statusMessage {
+      font-size: 1.5em;
+      font-weight: 500;
+      margin-top: 1em;
+      color: #7a4069;
+    }
+
+    #stopButton {
+      margin-top: 20px;
+      padding: 10px 25px;
+      font-size: 1.2em;
+      font-family: 'Times New Roman', serif;
+      background-color: #b35a7a;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    #stopButton:hover {
+      background-color: #8e3c5c;
+    }
+
+    .direction-grid {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .direction-btn {
+      width: 150px;
+      height: 150px;
+      border: none;
+      background: none;
+      padding: 0;
+      cursor: pointer;
+    }
+
+    .direction-btn img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      transition: opacity 0.3s;
+    }
+  </style>
+</head>
+<body>
+  <img src="https://i.pinimg.com/originals/99/37/30/993730e1d3019ac8611e2401b63fbc16.gif" alt="Floating Ghost" id="floatingGhost" />
+  <h1>Squash Ghosting Drill</h1>
+
+  <div id="configContainer" style="max-width: 500px; margin: 0 auto;">
+    <div style="display: flex; flex-direction: column; gap: 12px; font-family: sans-serif;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <label for="setsInput" style="flex: 1;">Number of Sets:</label>
+        <input type="number" id="setsInput" min="1" step="1" placeholder="Insert number of sets" style="flex: 1;" />
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <label for="movesInput" style="flex: 1;">Moves per Set:</label>
+        <input type="number" id="movesInput" min="1" step="1" placeholder="Insert number of moves" style="flex: 1;" />
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <label for="secondsInput" style="flex: 1;">Reaction Time (s):</label>
+        <input type="number" id="secondsInput" min="0.1" step="0.1" placeholder="Insert seconds" style="flex: 1;" />
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <label for="moveBreakInput" style="flex: 1;">Reposition Time (s):</label>
+        <input type="number" id="moveBreakInput" min="0" step="0.1" placeholder="Insert seconds" style="flex: 1;" />
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <label for="setBreakInput" style="flex: 1;">Rest Between Sets (s):</label>
+        <input type="number" id="setBreakInput" min="0" step="0.1" placeholder="Insert seconds" style="flex: 1;" />
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <input type="checkbox" id="motivationCheckbox" checked/>
+        <label for="motivationCheckbox">Enable Motivational Messages</label>
+      </div>
+      <div class="direction-grid" id="directionButtons"></div>
+      <button onclick="startDrill()">Start Drill</button>
+      <div id="error-message" style="color: red; font-weight: bold; text-align: center; margin-top: 10px;"></div>
+    </div>
+  </div>
+
+  <div id="drillView">
+    <div id="direction"></div>
+    <div id="countdown"></div>
+    <img id="image" src="" alt="Direction Image" />
+    <div id="statusMessage"></div>
+    <button onclick="stopDrill()" id="stopButton">Stop</button>
+  </div>
+
+ <script>
+  const clickSound = new Audio("https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg");
+  const allDirections = [
+    { name: "Front Left", key: "front-left" }, { name: "Front Right", key: "front-right" },
+    { name: "Side Left", key: "side-left" }, { name: "Side Right", key: "side-right" },
+    { name: "Back Left", key: "back-left" }, { name: "Back Right", key: "back-right" }
+  ];
+  const motivationalLines = [
+    { text: "Your break is over. Cry later. Move now." },
+    { text: "The floor misses you. Go make it sweat!" },
+    { text: "Congratulations, you are now… still not done!" },
+    { text: "Your coach called. They said move it!" },
+    { audio: "audio/run-faster.mp3", label: "Run Faster, Sofia Test" },
+    { audio: "audio/run-faster.mp3", label: "Run Faster, Sofia Test" }
+  ];
+
+  let selectedDirections = {}, currentSet = 0, moveCount = 0, totalSets = 0, movesPerSet = 0,
+      secondsPerMove = 0, breakPerMove = 0, breakPerSet = 0, interval, countdownInterval, 
+      stopped = false, motivationOn = true, moveTimeout;
+
+  const directionEl = document.getElementById("direction"), countdownEl = document.getElementById("countdown"),
+        imageEl = document.getElementById("image"), motivationCheckbox = document.getElementById("motivationCheckbox"),
+        drillView = document.getElementById("drillView"), configContainer = document.getElementById("configContainer"),
+        directionButtons = document.getElementById("directionButtons");
+
+  function toggleDirection(key) {
+    selectedDirections[key] = !selectedDirections[key];
+    const btn = document.querySelector(`.direction-btn[data-key="${key}"]`);
+    const img = btn.querySelector("img");
+    const fadedKey = 'f' + key.replace(/-/g, '_'); // Convert to ffront_left format
+    img.src = selectedDirections[key] ? `images/${key}.png` : `images/${fadedKey}.png`;
+    clickSound.currentTime = 0;
+    clickSound.play();
+  }
+
+  function speak(text) {
+    return new Promise((resolve, reject) => {
+      if (!('speechSynthesis' in window)) return resolve();
+
+      // Cancel any ongoing speech before starting a new one
+      speechSynthesis.cancel();
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 1.3;
+      utterance.volume = 1;
+
+      utterance.onend = () => resolve();
+      utterance.onerror = (e) => {
+        console.error('Speech error:', e);
+        resolve(); // still resolve so the app doesn't hang
+      };
+
+      speechSynthesis.speak(utterance);
+    });
+  }
+
+  function playMotivationMessage(callback) {
+    if (!motivationOn) {
+      callback?.();
+      return;
+    }
+
+    const message = pickRandom(motivationalLines);
+
+    if (message.audio) {
+      const audio = new Audio(message.audio);
+      audio.play().catch(() => {
+        // Fallback to TTS if audio fails
+        speak(message.label).then(() => callback?.());
+      });
+      audio.onended = () => callback?.();
+
+      // Safety timeout in case onended doesn't fire
+      setTimeout(() => callback?.(), 5000);
+    } else {
+      speak(message.text).then(() => callback?.());
+    }
+  }
+
+  function playBeep() { new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg").play(); }
+  function playBonk() { new Audio("https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg").play(); }
+  function pickRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+  allDirections.forEach(dir => {
+    selectedDirections[dir.key] = true;
+    const btn = document.createElement("button");
+    btn.className = "direction-btn";
+    btn.setAttribute("data-key", dir.key);
+    const img = document.createElement("img");
+    img.src = `images/${dir.key}.png`;
+    img.alt = dir.name;
+    btn.appendChild(img);
+    btn.onclick = () => toggleDirection(dir.key);
+    directionButtons.appendChild(btn);
+  });
+
+  function startDrill() {
+    // Initialize audio context
+    new Audio('data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU...')
+      .play().catch(e => console.log('Audio init:', e));
+
+    const errorEl = document.getElementById("error-message");
+    if (!Object.values(selectedDirections).some(Boolean)) {
+      return errorEl.textContent = "⚠️ Please select at least one direction!";
+    }
+
+    const inputs = [
+      { id: "setsInput", label: "Number of Sets", min: 1 }, { id: "movesInput", label: "Moves per Set", min: 1 },
+      { id: "secondsInput", label: "Reaction Time (s)", min: 0.1 }, { id: "moveBreakInput", label: "Reposition Time (s)", min: 0 },
+      { id: "setBreakInput", label: "Rest Between Sets (s)", min: 0 }
+    ];
+
+    for (const input of inputs) {
+      const el = document.getElementById(input.id), val = el.value.trim();
+      if (val === "") return errorEl.textContent = `⚠️ Please input a value for ${input.label} (e.g. 1)`;
+      const num = parseFloat(val);
+      if (isNaN(num) || num < input.min) return errorEl.textContent = `⚠️ ${input.label} must be ${input.min === 0 ? "0 or greater" : `at least ${input.min}`}`;
+    }
+
+    errorEl.textContent = "";
+    stopped = false;
+    currentSet = 1;
+    moveCount = 0;
+    totalSets = parseInt(document.getElementById("setsInput").value);
+    movesPerSet = parseInt(document.getElementById("movesInput").value);
+    secondsPerMove = parseFloat(document.getElementById("secondsInput").value);
+    breakPerMove = parseFloat(document.getElementById("moveBreakInput").value);
+    breakPerSet = parseFloat(document.getElementById("setBreakInput").value);
+    motivationOn = motivationCheckbox.checked;
+    configContainer.classList.add("hide");
+    drillView.classList.add("active");
+    directionEl.textContent = "";
+    imageEl.src = "";
+    runMove();
+  }
+
+  function stopDrill() {
+    stopped = true;
+    clearTimeout(interval);
+    clearInterval(countdownInterval);
+    clearTimeout(moveTimeout);
+    directionEl.textContent = "Drill Stopped.";
+    imageEl.src = "";
+    countdownEl.textContent = "";
+    speechSynthesis.cancel();
+    drillView.classList.remove("active");
+    configContainer.classList.remove("hide");
+  }
+
+  function runMove() {
+    if (stopped) return;
+
+    clearTimeout(interval);
+    clearTimeout(moveTimeout);
+
+    if (moveCount >= movesPerSet) {
+      if (currentSet >= totalSets) {
+        endDrill();
+        return;
+      }
+      runSetBreak();
+      return;
+    }
+
+    const filteredDirections = allDirections.filter(d => selectedDirections[d.key]);
+    if (filteredDirections.length === 0) return;
+
+    const move = pickRandom(filteredDirections);
+    directionEl.style.display = "block";
+    imageEl.style.display = "block";
+    directionEl.textContent = move.name;
+    imageEl.src = `images/${move.key}.png`;
+    countdownEl.textContent = "";
+    playBeep();
+
+    speechSynthesis.cancel();
+    setTimeout(() => speak(move.name), 100);
+
+    moveCount++;
+
+    interval = setTimeout(() => {
+      if (stopped) return;
+      directionEl.style.display = "none";
+      imageEl.style.display = "none";
+      playBonk();
+
+      moveTimeout = setTimeout(() => {
+        if (!stopped) runMove();
+      }, breakPerMove * 1000);
+    }, secondsPerMove * 1000);
+  }
+
+  function runSetBreak() {
+    clearInterval(countdownInterval);
+
+    currentSet++;
+    moveCount = 0;
+    directionEl.textContent = "Break between sets";
+    imageEl.src = "";
+    let countdown = breakPerSet;
+    countdownEl.textContent = countdown;
+    playBeep();
+
+    countdownInterval = setInterval(() => {
+      if (stopped) {
+        clearInterval(countdownInterval);
+        return;
+      }
+      countdown--;
+      countdownEl.textContent = countdown;
+      playBeep();
+
+      if (countdown < 1) {
+        clearInterval(countdownInterval);
+        countdownEl.textContent = "";
+        playMotivationMessage(() => {
+          if (!stopped) runMove();
+        });
+      }
+    }, 1000);
+  }
+
+  function endDrill() {
+    clearTimeout(interval);
+    clearInterval(countdownInterval);
+    clearTimeout(moveTimeout);
+    directionEl.style.display = "none";
+    imageEl.style.display = "none";
+    directionEl.textContent = "";
+    imageEl.src = "";
+    countdownEl.textContent = "Drill Complete!";
+    speak("Drill complete! Good job!");
+  }
+</script>
+</body>
+</html>
